@@ -5,15 +5,20 @@ import { Button } from "react-native-elements";
 const GeoCalc = () => {
   const [distanceCalc, setDistance] = useState("");
   const [bearingCalc, setBearing] = useState("");
-  // const [longPoint1, getLongPoint1] = useState("");
-  const [latPoint2, getLatPoint2] = useState("");
-  const [longPoint2, getLongPoint2] = useState("");
   const [latPoint1State, getLatPoint1] = useState({
     latPoint1: "",
     errorStatus: true,
   });
   const [longPoint1State, getLongPoint1] = useState({
     longPoint1: "",
+    errorStatus: true,
+  });
+  const [longPoint2State, getLongPoint2] = useState({
+    longPoint2: "",
+    errorStatus: true,
+  });
+  const [latPoint2State, getLatPoint2] = useState({
+    latPoint2: "",
     errorStatus: true,
   });
 
@@ -48,25 +53,57 @@ const GeoCalc = () => {
     }
   };
   const getLatPoint2InputHandler = (enteredLat2) => {
-    getLatPoint2(enteredLat2);
+    if (!isNaN(enteredLat2.latPoint2) && enteredLat2.latPoint2 != "") {
+      getLatPoint2({
+        ...latPoint2State,
+        errorStatus: true,
+        ...enteredLat2,
+      });
+    } else {
+      getLatPoint2({
+        ...latPoint2State,
+        errorStatus: false,
+        ...enteredLat2,
+      });
+    }
   };
   const getLongPoint2InputHandler = (enteredLong2) => {
-    getLongPoint2(enteredLong2);
+    if (!isNaN(enteredLong2.longPoint2) && enteredLong2.longPoint2 != "") {
+      getLongPoint2({
+        ...longPoint2State,
+        errorStatus: true,
+        ...enteredLong2,
+      });
+    } else {
+      getLongPoint2({
+        ...longPoint2State,
+        errorStatus: false,
+        ...enteredLong2,
+      });
+    }
   };
 
   const setDistanceInputHandler = () => {
-    if (!isNaN(latPoint1State.latPoint1) && latPoint1State.latPoint1 != "") {
+    if (
+      !isNaN(latPoint1State.latPoint1) &&
+      latPoint1State.latPoint1 != "" &&
+      !isNaN(latPoint2State.latPoint2) &&
+      latPoint2State.latPoint2 != "" &&
+      !isNaN(longPoint1State.longPoint1) &&
+      longPoint1State.longPoint1 != "" &&
+      !isNaN(longPoint2State.longPoint2) &&
+      longPoint2State.longPoint2 != ""
+    ) {
       let distance = computeDistance(
         latPoint1State.latPoint1,
         longPoint1State.longPoint1,
-        latPoint2,
-        longPoint2
+        latPoint2State.latPoint2,
+        longPoint2State.longPoint2
       );
       setBearingInputHandler();
       setDistance(distance);
       console.log("Still calc");
     } else {
-      // setDistance(distance);
       console.log("not calculation");
     }
   };
@@ -75,8 +112,8 @@ const GeoCalc = () => {
     let bearing = computeBearing(
       latPoint1State.latPoint1,
       longPoint1State.longPoint1,
-      latPoint2,
-      longPoint2
+      latPoint2State.latPoint2,
+      longPoint2State.longPoint2
     );
     setBearing(bearing);
   };
@@ -86,8 +123,8 @@ const GeoCalc = () => {
     setBearing("");
     getLatPoint1({ latPoint1: "", errorStatus: true });
     getLongPoint1({ longPoint1: "", errorStatus: true });
-    getLatPoint2("");
-    getLongPoint2("");
+    getLatPoint2({ latPoint2: "", errorStatus: true });
+    getLongPoint2({ longPoint2: "", errorStatus: true });
   };
 
   // Converts from degrees to radians.
@@ -158,7 +195,7 @@ const GeoCalc = () => {
         onChangeText={(enteredLong1) =>
           getLongPoint1InputHandler({ longPoint1: enteredLong1 })
         }
-        value={longPoint1}
+        value={longPoint1State.longPoint1}
       />
       {longPoint1State.errorStatus == false ? (
         <Text style={styles.errorMessage}>* Must be a number.</Text>
@@ -166,15 +203,25 @@ const GeoCalc = () => {
       <TextInput
         placeholder={"Enter latitude for point 2"}
         style={styles.inputStyle}
-        onChangeText={getLatPoint2InputHandler}
-        value={latPoint2}
+        onChangeText={(enteredLat2) =>
+          getLatPoint2InputHandler({ latPoint2: enteredLat2 })
+        }
+        value={latPoint2State.latPoint2}
       />
+      {latPoint2State.errorStatus == false ? (
+        <Text style={styles.errorMessage}>* Must be a number.</Text>
+      ) : null}
       <TextInput
         placeholder={"Enter longitude for point 2"}
         style={styles.inputStyle}
-        onChangeText={getLongPoint2InputHandler}
-        value={longPoint2}
+        onChangeText={(enteredLong2) =>
+          getLongPoint2InputHandler({ longPoint2: enteredLong2 })
+        }
+        value={longPoint2State.longPoint2}
       />
+      {longPoint2State.errorStatus == false ? (
+        <Text style={styles.errorMessage}>* Must be a number.</Text>
+      ) : null}
       <View style={styles.calcButton}>
         <Button title={"Calculate"} onPress={setDistanceInputHandler} />
       </View>
