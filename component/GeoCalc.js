@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, View, Text, TextInput } from "react-native";
+import { StyleSheet, View, Text, TextInput, Platform } from "react-native";
 import { Button } from "react-native-elements";
 
 const GeoCalc = () => {
@@ -177,6 +177,9 @@ const GeoCalc = () => {
 
   return (
     <View>
+      <View style={styles.titleViewStyle}>
+        <Text style={styles.titleStyle}>{"GVSU GEOCAL"}</Text>
+      </View>
       <TextInput
         // keyboardType="numeric"
         placeholder={"Enter latitude for point 1"}
@@ -267,6 +270,20 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "red",
     marginLeft: -20,
+  },
+
+  titleViewStyle: {
+    alignItems: "center",
+  },
+  titleStyle: {
+    color: "#2276c0",
+    paddingTop: 12,
+    paddingBottom: 15,
+    fontSize: 20,
+    fontWeight: "bold",
+    fontStyle: "italic",
+    fontFamily:
+      Platform.OS === "android" ? "sans-serif-medium" : "Helvetica Neue",
   },
 });
 
