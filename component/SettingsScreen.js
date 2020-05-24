@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, SafeAreaView } from "react-native";
 import { Dropdown } from "react-native-material-dropdown";
 import { TouchableOpacity } from "react-native-gesture-handler";
 
@@ -20,7 +20,7 @@ const SettingsScreen = ({ navigation }) => {
   navigation.setOptions({
     headerRight: () => (
       <TouchableOpacity onPress={() => navigation.navigate("GeoCalculator")}>
-        <Text>Cancel</Text>
+        <Text style={{ marginRight: 10, color: "#fff" }}>Cancel</Text>
       </TouchableOpacity>
     ),
     headerLeft: () => (
@@ -32,30 +32,43 @@ const SettingsScreen = ({ navigation }) => {
           });
         }}
       >
-        <Text>Save</Text>
+        <Text style={{ marginLeft: 10, color: "#fff" }}>Save</Text>
       </TouchableOpacity>
     ),
+    headerStyle: {
+      backgroundColor: "#2276c0",
+    },
+    headerTintColor: "#fff",
   });
 
   return (
-    <View style={styles.dropStyle}>
-      <Dropdown
-        label={"Distance Units"}
-        data={distanceUnits}
-        onChangeText={getDistanceUnit}
-        value={distanceUnit}
-      />
-      <Dropdown
-        label={"Bearing Units"}
-        data={bearingUnits}
-        onChangeText={getBearingUnit}
-        value={bearingUnit}
-      />
-    </View>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.dropStyle}>
+        <Dropdown
+          label={"Distance Units"}
+          data={distanceUnits}
+          onChangeText={getDistanceUnit}
+          value={distanceUnit}
+        />
+        <Dropdown
+          label={"Bearing Units"}
+          data={bearingUnits}
+          onChangeText={getBearingUnit}
+          value={bearingUnit}
+        />
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#d0ecfd",
+    alignSelf: "center",
+    width: "100%",
+  },
+
   dropStyle: {
     flex: 1,
     marginTop: 10,

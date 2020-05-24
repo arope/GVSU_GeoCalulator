@@ -140,8 +140,6 @@ const GeoCalc = ({ route, navigation }) => {
     getLongPoint2({ longPoint2: "", errorStatus: true });
   };
 
-  // console.log(Number(distanceCalc.slice(0, -3)));
-
   useEffect(() => {
     if (route.params?.distanceUnit) {
       if (
@@ -149,21 +147,34 @@ const GeoCalc = ({ route, navigation }) => {
         distanceCalc.includes("mi")
       ) {
         let distanceVal = Number(distanceCalc.slice(0, -3));
-        distanceVal = distanceVal * 1.609;
-        setDistance(`${distanceVal} km`);
+        distanceVal = distanceVal * 1.609344;
+        setDistance(`${round(distanceVal, 3)} km`);
       } else if (
-        route.params?.distanceUnit === "Miles" &&
+        route.params.distanceUnit === "Miles" &&
         distanceCalc.includes("km")
       ) {
         let distanceVal = Number(distanceCalc.slice(0, -3));
-        distanceVal = distanceVal / 1.609;
-        setDistance(`${distanceVal} mi`);
+        distanceVal = distanceVal / 1.609344;
+        setDistance(`${round(distanceVal, 3)} mi`);
       }
     }
-
-    // if (route.params?.bearingUnit) {
-    //   setBearing(route.params.bearingUnit);
-    // }
+    if (route.params?.bearingUnit) {
+      if (
+        route.params.bearingUnit === "Mils" &&
+        bearingCalc.includes("degrees")
+      ) {
+        let bearingVal = Number(bearingCalc.slice(0, -8));
+        bearingVal = bearingVal * 17.777777777778;
+        setBearing(`${round(bearingVal, 3)} mil`);
+      } else if (
+        route.params.bearingUnit === "Degrees" &&
+        bearingCalc.includes("mil")
+      ) {
+        let bearingVal = Number(bearingCalc.slice(0, -4));
+        bearingVal = bearingVal / 17.777777777778;
+        setBearing(`${round(bearingVal, 3)} degrees`);
+      }
+    }
   }, [route.params?.distanceUnit, route.params?.bearingUnit]);
 
   // Converts from degrees to radians.
@@ -191,7 +202,11 @@ const GeoCalc = ({ route, navigation }) => {
         Math.sin(dLon / 2);
     var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     var d = R * c;
-    return `${round(d, 3)} mi`;
+    if (distanceCalc.includes("mi")) {
+      return `${round(d, 3)} mi`;
+    } else {
+      return `${round(d * 1.609344, 3)} km`;
+    }
   }
 
   // Computes bearing between two geo coordinates in degrees.
@@ -208,7 +223,11 @@ const GeoCalc = ({ route, navigation }) => {
     var brng = Math.atan2(y, x);
     brng = toDegrees(brng);
     brng = (brng + 360) % 360;
-    return `${round(brng, 3)} degrees`;
+    if (bearingCalc.includes("degrees")) {
+      return `${round(brng, 3)} degrees`;
+    } else {
+      return `${round(brng * 17.777777777778, 3)} mil`;
+    }
   }
   function round(value, decimals) {
     return Number(Math.round(value + "e" + decimals) + "e-" + decimals);
@@ -217,18 +236,26 @@ const GeoCalc = ({ route, navigation }) => {
   navigation.setOptions({
     headerRight: () => (
       <TouchableOpacity onPress={() => navigation.navigate("SettingsScreen")}>
-        <Feather style={{ marginRight: 10 }} name="settings" size={24} />
+        <Feather
+          style={{ marginRight: 10, color: "#fff" }}
+          name="settings"
+          size={24}
+        />
       </TouchableOpacity>
     ),
+    headerStyle: {
+      backgroundColor: "#2276c0",
+    },
+    headerTintColor: "#fff",
   });
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={styles.container}>
-        <View>
-          <View style={styles.titleViewStyle}>
+        <View style={{ marginTop: 15 }}>
+          {/* <View style={styles.titleViewStyle}>
             <Text style={styles.titleStyle}>{"GVSU GEOCAL"}</Text>
-          </View>
+          </View> */}
           <TextInput
             // keyboardType="numeric"
             placeholder={"Enter latitude for point 1"}
@@ -280,25 +307,21 @@ const GeoCalc = ({ route, navigation }) => {
           <View style={styles.clearButton}>
             <Button title={"Clear"} onPress={clearState} />
           </View>
-          {/* <View style={styles.bearingValue}>
-            <Text>{`${distanceCalc}`}</Text>
-            <Text>{`${bearingCalc}`}</Text>
-          </View> */}
           <View style={styles.viewContainer}>
             <View style={styles.columnView}>
               <View style={styles.distanceText}>
-                <Text> {"Distance"} </Text>
+                <Text style={{ fontWeight: "bold" }}> {"Distance"} </Text>
               </View>
-              <View style={styles.distanceText}>
-                <Text> {"Bearing"} </Text>
+              <View style={styles.bearingText}>
+                <Text style={{ fontWeight: "bold" }}> {"Bearing"} </Text>
               </View>
             </View>
             <View style={styles.columnView}>
               <View style={styles.actualDistanceText}>
-                <Text> {distanceCalc} </Text>
+                <Text style={{ fontWeight: "bold" }}> {distanceCalc} </Text>
               </View>
-              <View style={styles.actualDistanceText}>
-                <Text> {bearingCalc} </Text>
+              <View style={styles.actualBearingText}>
+                <Text style={{ fontWeight: "bold" }}> {bearingCalc} </Text>
               </View>
             </View>
           </View>
@@ -311,23 +334,18 @@ const GeoCalc = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    // alignItems: "center",
-    // justifyContent: "space-around",
-    // alignContent: "center",
+    backgroundColor: "#d0ecfd",
     alignSelf: "center",
     width: "100%",
-    // top: 50,
-    //left: 40,
   },
   calcButton: {
-    width: "80%",
+    width: "90%",
     height: 100,
     paddingTop: 20,
     alignSelf: "center",
   },
   clearButton: {
-    width: "80%",
+    width: "90%",
     height: 50,
     alignSelf: "center",
   },
@@ -337,18 +355,18 @@ const styles = StyleSheet.create({
     left: -15,
   },
   inputStyle: {
-    borderBottomWidth: 1,
+    borderBottomWidth: 1.5,
     borderBottomColor: "gray",
     height: 40,
     fontSize: 15,
-    width: "80%",
-    // marginLeft: 10,
+    width: "90%",
+    marginLeft: 15,
   },
 
   errorMessage: {
     fontSize: 15,
     color: "red",
-    marginLeft: -20,
+    marginLeft: -10,
   },
 
   titleViewStyle: {
@@ -369,15 +387,36 @@ const styles = StyleSheet.create({
     width: 175,
     borderColor: "black",
     borderBottomWidth: 0.5,
-    borderTopWidth: 0.5,
-    borderLeftWidth: 1,
+    borderTopWidth: 1.0,
+    borderLeftWidth: 1.0,
     justifyContent: "center",
   },
+  bearingText: {
+    height: 50,
+    width: 175,
+    borderColor: "black",
+    borderBottomWidth: 1.0,
+    borderTopWidth: 0.5,
+    borderLeftWidth: 1.0,
+    justifyContent: "center",
+  },
+
   actualDistanceText: {
     height: 50,
     width: 175,
     borderColor: "black",
     borderBottomWidth: 0.5,
+    borderTopWidth: 1.0,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  actualBearingText: {
+    height: 50,
+    width: 175,
+    borderColor: "black",
+    borderBottomWidth: 1.0,
     borderTopWidth: 0.5,
     borderLeftWidth: 1,
     borderRightWidth: 1,
@@ -386,6 +425,7 @@ const styles = StyleSheet.create({
   },
   viewContainer: {
     flexDirection: "row",
+    alignSelf: "center",
   },
   columnView: {
     flexDirection: "column",

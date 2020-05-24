@@ -19,11 +19,40 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator>
         <Stack.Screen
-          style={styles.container}
           name="GeoCalculator"
           component={GeoCalc}
+          options={{
+            title: "GVSU GEOCAL",
+            headerTitleStyle: {
+              fontSize: 20,
+              // fontWeight: "bold",
+              // fontStyle: "italic",
+              fontFamily:
+                Platform.OS === "android"
+                  ? "sans-serif-medium"
+                  : "Helvetica Neue",
+              alignSelf: "center",
+              marginLeft: 40,
+            },
+          }}
         />
-        <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
+        <Stack.Screen
+          name="SettingsScreen"
+          component={SettingsScreen}
+          options={{
+            title: "Settings",
+            headerTitleStyle: {
+              fontSize: 20,
+              // fontWeight: "bold",
+              // fontStyle: "italic",
+              fontFamily:
+                Platform.OS === "android"
+                  ? "sans-serif-medium"
+                  : "Helvetica Neue",
+              alignSelf: "center",
+            },
+          }}
+        />
 
         {/* <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={styles.container}> */}
