@@ -1,8 +1,21 @@
-import React, { useState } from "react";
-import { StyleSheet, View, Text, TextInput, Platform } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  StyleSheet,
+  View,
+  Text,
+  TextInput,
+  Platform,
+  SafeAreaView,
+  Keyboard,
+  TouchableWithoutFeedback,
+} from "react-native";
 import { Button } from "react-native-elements";
+import { Feather } from "@expo/vector-icons";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
-const GeoCalc = () => {
+const GeoCalc = ({ route, navigation }) => {
+  console.log(route.params);
+
   const [distanceCalc, setDistance] = useState("");
   const [bearingCalc, setBearing] = useState("");
   const [latPoint1State, getLatPoint1] = useState({
@@ -127,6 +140,32 @@ const GeoCalc = () => {
     getLongPoint2({ longPoint2: "", errorStatus: true });
   };
 
+  // console.log(Number(distanceCalc.slice(0, -3)));
+
+  useEffect(() => {
+    if (route.params?.distanceUnit) {
+      if (
+        route.params.distanceUnit === "Kilometers" &&
+        distanceCalc.includes("mi")
+      ) {
+        let distanceVal = Number(distanceCalc.slice(0, -3));
+        distanceVal = distanceVal * 1.609;
+        setDistance(`${distanceVal} km`);
+      } else if (
+        route.params?.distanceUnit === "Miles" &&
+        distanceCalc.includes("km")
+      ) {
+        let distanceVal = Number(distanceCalc.slice(0, -3));
+        distanceVal = distanceVal / 1.609;
+        setDistance(`${distanceVal} mi`);
+      }
+    }
+
+    // if (route.params?.bearingUnit) {
+    //   setBearing(route.params.bearingUnit);
+    // }
+  }, [route.params?.distanceUnit, route.params?.bearingUnit]);
+
   // Converts from degrees to radians.
   function toRadians(degrees) {
     return (degrees * Math.PI) / 180;
@@ -152,7 +191,7 @@ const GeoCalc = () => {
         Math.sin(dLon / 2);
     var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     var d = R * c;
-    return `Distance: ${round(d, 3)} mi`;
+    return `${round(d, 3)} mi`;
   }
 
   // Computes bearing between two geo coordinates in degrees.
@@ -169,89 +208,128 @@ const GeoCalc = () => {
     var brng = Math.atan2(y, x);
     brng = toDegrees(brng);
     brng = (brng + 360) % 360;
-    return `Bearing: ${round(brng, 3)} degrees`;
+    return `${round(brng, 3)} degrees`;
   }
   function round(value, decimals) {
     return Number(Math.round(value + "e" + decimals) + "e-" + decimals);
   }
 
+  navigation.setOptions({
+    headerRight: () => (
+      <TouchableOpacity onPress={() => navigation.navigate("SettingsScreen")}>
+        <Feather style={{ marginRight: 10 }} name="settings" size={24} />
+      </TouchableOpacity>
+    ),
+  });
+
   return (
-    <View>
-      <View style={styles.titleViewStyle}>
-        <Text style={styles.titleStyle}>{"GVSU GEOCAL"}</Text>
-      </View>
-      <TextInput
-        // keyboardType="numeric"
-        placeholder={"Enter latitude for point 1"}
-        style={styles.inputStyle}
-        onChangeText={(enteredLat1) =>
-          getLatPoint1InputHandler({ latPoint1: enteredLat1 })
-        }
-        value={latPoint1State.latPoint1}
-      />
-      {latPoint1State.errorStatus == false ? (
-        <Text style={styles.errorMessage}>* Must be a number.</Text>
-      ) : null}
-      <TextInput
-        placeholder={"Enter longitude for point 1"}
-        style={styles.inputStyle}
-        onChangeText={(enteredLong1) =>
-          getLongPoint1InputHandler({ longPoint1: enteredLong1 })
-        }
-        value={longPoint1State.longPoint1}
-      />
-      {longPoint1State.errorStatus == false ? (
-        <Text style={styles.errorMessage}>* Must be a number.</Text>
-      ) : null}
-      <TextInput
-        placeholder={"Enter latitude for point 2"}
-        style={styles.inputStyle}
-        onChangeText={(enteredLat2) =>
-          getLatPoint2InputHandler({ latPoint2: enteredLat2 })
-        }
-        value={latPoint2State.latPoint2}
-      />
-      {latPoint2State.errorStatus == false ? (
-        <Text style={styles.errorMessage}>* Must be a number.</Text>
-      ) : null}
-      <TextInput
-        placeholder={"Enter longitude for point 2"}
-        style={styles.inputStyle}
-        onChangeText={(enteredLong2) =>
-          getLongPoint2InputHandler({ longPoint2: enteredLong2 })
-        }
-        value={longPoint2State.longPoint2}
-      />
-      {longPoint2State.errorStatus == false ? (
-        <Text style={styles.errorMessage}>* Must be a number.</Text>
-      ) : null}
-      <View style={styles.calcButton}>
-        <Button title={"Calculate"} onPress={setDistanceInputHandler} />
-      </View>
-      <View style={styles.clearButton}>
-        <Button title={"Clear"} onPress={clearState} />
-      </View>
-      <View style={styles.bearingValue}>
-        <Text>{`${distanceCalc}`}</Text>
-        <Text>{`${bearingCalc}`}</Text>
-      </View>
-    </View>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <SafeAreaView style={styles.container}>
+        <View>
+          <View style={styles.titleViewStyle}>
+            <Text style={styles.titleStyle}>{"GVSU GEOCAL"}</Text>
+          </View>
+          <TextInput
+            // keyboardType="numeric"
+            placeholder={"Enter latitude for point 1"}
+            style={styles.inputStyle}
+            onChangeText={(enteredLat1) =>
+              getLatPoint1InputHandler({ latPoint1: enteredLat1 })
+            }
+            value={latPoint1State.latPoint1}
+          />
+          {latPoint1State.errorStatus == false ? (
+            <Text style={styles.errorMessage}>* Must be a number.</Text>
+          ) : null}
+          <TextInput
+            placeholder={"Enter longitude for point 1"}
+            style={styles.inputStyle}
+            onChangeText={(enteredLong1) =>
+              getLongPoint1InputHandler({ longPoint1: enteredLong1 })
+            }
+            value={longPoint1State.longPoint1}
+          />
+          {longPoint1State.errorStatus == false ? (
+            <Text style={styles.errorMessage}>* Must be a number.</Text>
+          ) : null}
+          <TextInput
+            placeholder={"Enter latitude for point 2"}
+            style={styles.inputStyle}
+            onChangeText={(enteredLat2) =>
+              getLatPoint2InputHandler({ latPoint2: enteredLat2 })
+            }
+            value={latPoint2State.latPoint2}
+          />
+          {latPoint2State.errorStatus == false ? (
+            <Text style={styles.errorMessage}>* Must be a number.</Text>
+          ) : null}
+          <TextInput
+            placeholder={"Enter longitude for point 2"}
+            style={styles.inputStyle}
+            onChangeText={(enteredLong2) =>
+              getLongPoint2InputHandler({ longPoint2: enteredLong2 })
+            }
+            value={longPoint2State.longPoint2}
+          />
+          {longPoint2State.errorStatus == false ? (
+            <Text style={styles.errorMessage}>* Must be a number.</Text>
+          ) : null}
+          <View style={styles.calcButton}>
+            <Button title={"Calculate"} onPress={setDistanceInputHandler} />
+          </View>
+          <View style={styles.clearButton}>
+            <Button title={"Clear"} onPress={clearState} />
+          </View>
+          {/* <View style={styles.bearingValue}>
+            <Text>{`${distanceCalc}`}</Text>
+            <Text>{`${bearingCalc}`}</Text>
+          </View> */}
+          <View style={styles.viewContainer}>
+            <View style={styles.columnView}>
+              <View style={styles.distanceText}>
+                <Text> {"Distance"} </Text>
+              </View>
+              <View style={styles.distanceText}>
+                <Text> {"Bearing"} </Text>
+              </View>
+            </View>
+            <View style={styles.columnView}>
+              <View style={styles.actualDistanceText}>
+                <Text> {distanceCalc} </Text>
+              </View>
+              <View style={styles.actualDistanceText}>
+                <Text> {bearingCalc} </Text>
+              </View>
+            </View>
+          </View>
+        </View>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    /*  backgroundColor: "dodgerblue",
-  flex: 0.5, */
+    flex: 1,
+    backgroundColor: "#fff",
+    // alignItems: "center",
+    // justifyContent: "space-around",
+    // alignContent: "center",
+    alignSelf: "center",
+    width: "100%",
+    // top: 50,
+    //left: 40,
   },
   calcButton: {
-    width: "100%",
+    width: "80%",
     height: 100,
     paddingTop: 20,
+    alignSelf: "center",
   },
   clearButton: {
-    width: "100%",
+    width: "80%",
     height: 50,
+    alignSelf: "center",
   },
 
   bearingValue: {
@@ -263,7 +341,8 @@ const styles = StyleSheet.create({
     borderBottomColor: "gray",
     height: 40,
     fontSize: 15,
-    //fontWeight: "bold",
+    width: "80%",
+    // marginLeft: 10,
   },
 
   errorMessage: {
@@ -284,6 +363,32 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     fontFamily:
       Platform.OS === "android" ? "sans-serif-medium" : "Helvetica Neue",
+  },
+  distanceText: {
+    height: 50,
+    width: 175,
+    borderColor: "black",
+    borderBottomWidth: 0.5,
+    borderTopWidth: 0.5,
+    borderLeftWidth: 1,
+    justifyContent: "center",
+  },
+  actualDistanceText: {
+    height: 50,
+    width: 175,
+    borderColor: "black",
+    borderBottomWidth: 0.5,
+    borderTopWidth: 0.5,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  viewContainer: {
+    flexDirection: "row",
+  },
+  columnView: {
+    flexDirection: "column",
   },
 });
 
