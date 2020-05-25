@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, SafeAreaView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  SafeAreaView,
+  AsyncStorage,
+} from "react-native";
 import { Dropdown } from "react-native-material-dropdown";
 import { TouchableOpacity } from "react-native-gesture-handler";
 
@@ -17,6 +23,38 @@ const SettingsScreen = ({ navigation }) => {
     setBearingUnit(enteredUnit);
   };
 
+  const storeDistanceUnit = async (distancedUnit) => {
+    if (distanceUnit !== "") {
+      try {
+        await AsyncStorage.setItem("distanceUnit", distancedUnit);
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      return;
+    }
+  };
+
+  const storeBearingUnit = async (bearingedUnit) => {
+    if (bearingUnit !== "") {
+      try {
+        await AsyncStorage.setItem("bearingUnit", bearingedUnit);
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      return;
+    }
+  };
+  const saveUnits = () => {
+    storeDistanceUnit(distanceUnit);
+    storeBearingUnit(bearingUnit);
+    navigation.navigate("GeoCalculator", {
+      distanceUnit,
+      bearingUnit,
+    });
+  };
+
   navigation.setOptions({
     headerRight: () => (
       <TouchableOpacity onPress={() => navigation.navigate("GeoCalculator")}>
@@ -25,12 +63,15 @@ const SettingsScreen = ({ navigation }) => {
     ),
     headerLeft: () => (
       <TouchableOpacity
-        onPress={() => {
-          navigation.navigate("GeoCalculator", {
-            distanceUnit,
-            bearingUnit,
-          });
-        }}
+        onPress={
+          //{() =>
+          saveUnits
+          // navigation.navigate("GeoCalculator", {
+          //   distanceUnit,
+          //   bearingUnit,
+          // });
+        }
+        //}
       >
         <Text style={{ marginLeft: 10, color: "#fff" }}>Save</Text>
       </TouchableOpacity>

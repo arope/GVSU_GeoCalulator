@@ -8,14 +8,13 @@ import {
   SafeAreaView,
   Keyboard,
   TouchableWithoutFeedback,
+  AsyncStorage,
 } from "react-native";
 import { Button } from "react-native-elements";
 import { Feather } from "@expo/vector-icons";
 import { TouchableOpacity } from "react-native-gesture-handler";
 
 const GeoCalc = ({ route, navigation }) => {
-  console.log(route.params);
-
   const [distanceCalc, setDistance] = useState("");
   const [bearingCalc, setBearing] = useState("");
   const [latPoint1State, getLatPoint1] = useState({
@@ -96,7 +95,7 @@ const GeoCalc = ({ route, navigation }) => {
     }
   };
 
-  const setDistanceInputHandler = () => {
+  const setDistanceInputHandler = (unit) => {
     if (
       !isNaN(latPoint1State.latPoint1) &&
       latPoint1State.latPoint1 != "" &&
@@ -111,22 +110,23 @@ const GeoCalc = ({ route, navigation }) => {
         latPoint1State.latPoint1,
         longPoint1State.longPoint1,
         latPoint2State.latPoint2,
-        longPoint2State.longPoint2
+        longPoint2State.longPoint2,
+        unit
       );
-      setBearingInputHandler();
+      //   setBearingInputHandler(bearingUnit);
       setDistance(distance);
-      console.log("Still calc");
     } else {
-      console.log("not calculation");
+      console.log("error");
     }
   };
 
-  const setBearingInputHandler = () => {
+  const setBearingInputHandler = (unit) => {
     let bearing = computeBearing(
       latPoint1State.latPoint1,
       longPoint1State.longPoint1,
       latPoint2State.latPoint2,
-      longPoint2State.longPoint2
+      longPoint2State.longPoint2,
+      unit
     );
     setBearing(bearing);
   };
@@ -138,6 +138,27 @@ const GeoCalc = ({ route, navigation }) => {
     getLongPoint1({ longPoint1: "", errorStatus: true });
     getLatPoint2({ latPoint2: "", errorStatus: true });
     getLongPoint2({ longPoint2: "", errorStatus: true });
+  };
+
+  const getDistanceUnit = () => {
+    AsyncStorage.getItem("distanceUnit").then((value) => {
+      checkDist(value);
+      getBearingUnit();
+    });
+  };
+
+  const getBearingUnit = () => {
+    AsyncStorage.getItem("bearingUnit").then((value) => {
+      checkBearing(value);
+    });
+  };
+
+  const checkDist = (val) => {
+    setDistanceInputHandler(val);
+  };
+
+  const checkBearing = (val) => {
+    setBearingInputHandler(val);
   };
 
   useEffect(() => {
@@ -188,8 +209,7 @@ const GeoCalc = ({ route, navigation }) => {
   }
 
   // Computes distance between two geo coordinates in kilometers.
-  function computeDistance(lat1, lon1, lat2, lon2) {
-    console.log(`p1={${lat1},${lon1}} p2={${lat2},${lon2}}`);
+  function computeDistance(lat1, lon1, lat2, lon2, unit) {
     //  var R = 6371; // km (change this constant to get miles)
     var R = 3958.756;
     var dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -202,7 +222,7 @@ const GeoCalc = ({ route, navigation }) => {
         Math.sin(dLon / 2);
     var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     var d = R * c;
-    if (distanceCalc.includes("mi")) {
+    if (unit === "Miles") {
       return `${round(d, 3)} mi`;
     } else {
       return `${round(d * 1.609344, 3)} km`;
@@ -210,7 +230,7 @@ const GeoCalc = ({ route, navigation }) => {
   }
 
   // Computes bearing between two geo coordinates in degrees.
-  function computeBearing(startLat, startLng, destLat, destLng) {
+  function computeBearing(startLat, startLng, destLat, destLng, unit) {
     startLat = toRadians(startLat);
     startLng = toRadians(startLng);
     destLat = toRadians(destLat);
@@ -223,10 +243,11 @@ const GeoCalc = ({ route, navigation }) => {
     var brng = Math.atan2(y, x);
     brng = toDegrees(brng);
     brng = (brng + 360) % 360;
-    if (bearingCalc.includes("degrees")) {
-      return `${round(brng, 3)} degrees`;
-    } else {
+    //   if (bearingCalc.includes("degrees")) {
+    if (unit === "Mils") {
       return `${round(brng * 17.777777777778, 3)} mil`;
+    } else {
+      return `${round(brng, 3)} degrees`;
     }
   }
   function round(value, decimals) {
@@ -253,9 +274,6 @@ const GeoCalc = ({ route, navigation }) => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={styles.container}>
         <View style={{ marginTop: 15 }}>
-          {/* <View style={styles.titleViewStyle}>
-            <Text style={styles.titleStyle}>{"GVSU GEOCAL"}</Text>
-          </View> */}
           <TextInput
             // keyboardType="numeric"
             placeholder={"Enter latitude for point 1"}
@@ -302,7 +320,7 @@ const GeoCalc = ({ route, navigation }) => {
             <Text style={styles.errorMessage}>* Must be a number.</Text>
           ) : null}
           <View style={styles.calcButton}>
-            <Button title={"Calculate"} onPress={setDistanceInputHandler} />
+            <Button title={"Calculate"} onPress={getDistanceUnit} />
           </View>
           <View style={styles.clearButton}>
             <Button title={"Clear"} onPress={clearState} />
@@ -371,16 +389,6 @@ const styles = StyleSheet.create({
 
   titleViewStyle: {
     alignItems: "center",
-  },
-  titleStyle: {
-    color: "#2276c0",
-    paddingTop: 12,
-    paddingBottom: 15,
-    fontSize: 20,
-    fontWeight: "bold",
-    fontStyle: "italic",
-    fontFamily:
-      Platform.OS === "android" ? "sans-serif-medium" : "Helvetica Neue",
   },
   distanceText: {
     height: 50,
