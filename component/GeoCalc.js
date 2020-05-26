@@ -116,19 +116,32 @@ const GeoCalc = ({ route, navigation }) => {
       //   setBearingInputHandler(bearingUnit);
       setDistance(distance);
     } else {
-      console.log("error");
+      console.log("No Data");
     }
   };
 
   const setBearingInputHandler = (unit) => {
-    let bearing = computeBearing(
-      latPoint1State.latPoint1,
-      longPoint1State.longPoint1,
-      latPoint2State.latPoint2,
-      longPoint2State.longPoint2,
-      unit
-    );
-    setBearing(bearing);
+    if (
+      !isNaN(latPoint1State.latPoint1) &&
+      latPoint1State.latPoint1 != "" &&
+      !isNaN(latPoint2State.latPoint2) &&
+      latPoint2State.latPoint2 != "" &&
+      !isNaN(longPoint1State.longPoint1) &&
+      longPoint1State.longPoint1 != "" &&
+      !isNaN(longPoint2State.longPoint2) &&
+      longPoint2State.longPoint2 != ""
+    ) {
+      let bearing = computeBearing(
+        latPoint1State.latPoint1,
+        longPoint1State.longPoint1,
+        latPoint2State.latPoint2,
+        longPoint2State.longPoint2,
+        unit
+      );
+      setBearing(bearing);
+    } else {
+      console.log("No Data");
+    }
   };
 
   const clearState = () => {
